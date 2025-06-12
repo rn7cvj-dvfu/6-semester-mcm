@@ -18,7 +18,7 @@ def simulate_heater(
     P=100,            # мощность (Вт)
     m=0.3,            # масса (кг)
     c=500,            # уд. теплоемкость (Дж/кг·К)
-    S=0.01,           # площадь теплообмена (м²)
+    A=0.01,           # площадь теплообмена (м²)
     k=10,             # коэфф. теплообмена (Вт/м²·К)
     T_min_C=70,       # мин. температура терморегулятора (°C)
     T_max_C=100,      # макс. температура терморегулятора (°C)
@@ -50,8 +50,8 @@ def simulate_heater(
 
         # Энергетические потоки
         q_gen = P * eta(current_T) * dt * thermostat_effect
-        q_conv = k * S * (current_T - T_env) * dt
-        q_rad = sigma * S * (current_T**4 - T_env**4) * dt
+        q_conv = k * A * (current_T - T_env) * dt
+        q_rad = sigma * A * (current_T**4 - T_env**4) * dt
 
         delta_U = q_gen - q_conv - q_rad
         dT = delta_U / (m * c)
@@ -72,30 +72,35 @@ def run_experiments():
     plt.figure(figsize=(12, 7))
 
     # Все параметры одинаковы, кроме T_min_C и T_max_C
-    base_params = dict(P=100, m=0.3, S=0.01, alpha=10)
-    t1, T1 = simulate_heater(**base_params, T_min_C=60, T_max_C=80)
-    plot_simulation(t1, T1, "T_min=60°C, T_max=80°C")
+    base_params = dict(P=100, m=0.3, A=0.01, k=10)
+    t1, T1 = simulate_heater(**base_params, T_min_C=60, T_max_C=80, thermostat_control= lambda current_T, heating, T_min, T_max : True)
+    plot_simulation(t1, T1, "P = 100 Вт, m = 0.3 кг, A = 0.01 м², k = 10 Вт/м²·К,")
 
+    base_params = dict(P=100, m=0.6, A=0.01, k=10)
     t2, T2 = simulate_heater(**base_params, T_min_C=70, T_max_C=90)
-    plot_simulation(t2, T2, "T_min=70°C, T_max=90°C")
+    plot_simulation(t2, T2, "P = 100 Вт, m = 0.6 кг, A = 0.01 м², k = 10 Вт/м²·К")
 
+    base_params = dict(P=100, m=0.3, A=0.005, k=10)
     t3, T3 = simulate_heater(**base_params, T_min_C=80, T_max_C=100)
-    plot_simulation(t3, T3, "T_min=80°C, T_max=100°C")
+    plot_simulation(t3, T3, "P = 100 Вт, m = 0.6 кг, A = 0.005 м², k = 10 Вт/м²·К")
 
+    base_params = dict(P=150, m=0.3, A=0.01, k=10)
     t4, T4 = simulate_heater(**base_params, T_min_C=90, T_max_C=110)
-    plot_simulation(t4, T4, "T_min=90°C, T_max=110°C")
+    plot_simulation(t4, T4, "P = 150 Вт, m = 0.6 кг, A = 0.01 м², k = 10 Вт/м²·К")
 
+    base_params = dict(P=100, m=0.3, A=0.01, k=5)
     t5, T5 = simulate_heater(**base_params, T_min_C=100, T_max_C=120)
-    plot_simulation(t5, T5, "T_min=100°C, T_max=120°C")
+    plot_simulation(t5, T5, "P = 100 Вт, m = 0.6 кг, A = 0.01 м², k = 5 Вт/м²·К")
 
-    plt.title("Влияние T_min и T_max на поведение нагревателя")
+    plt.title("Сравнение поведения нагревателя при разных параметрах")
     plt.show()
 
 def run_Tmin_Tmax_experiments():
     plt.figure(figsize=(12, 7))
-    base_params = dict(P=100, m=0.3, S=0.01, alpha=10)
-    t1, T1 = simulate_heater(**base_params, T_min_C=60, T_max_C=80 , thermostat_control=thermostat_control)
+    base_params = dict(P=100, m=0.3, A=0.01, k=10)
+    t1, T1 = simulate_heater(**base_params, T_min_C=60, T_max_C=80 , thermostat_control=thermostat_control )
     plot_simulation(t1, T1, "T_min=60°C, T_max=80°C")
+    
     t2, T2 = simulate_heater(**base_params, T_min_C=100, T_max_C=110, thermostat_control=thermostat_control)
     plot_simulation(t2, T2, "T_min=100°C, T_max=110°C")
     t3, T3 = simulate_heater(**base_params, T_min_C=120, T_max_C=125,    thermostat_control=thermostat_control)
@@ -145,8 +150,8 @@ def run_eta_experiment():
 
 # --- Точка входа ---
 if __name__ == "__main__":
-    # run_experiments()
+    run_experiments()
     # run_Tmin_Tmax_experiments()
     # run_power_experiment()
     # run_k_experiment()
-    run_eta_experiment()
+    # run_eta_experiment()
