@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Интерактивная 1D Симуляция</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        display: flex;
+        background-color: #f4f7f6;
+        color: #333;
+        margin: 0;
+        height: 100vh;
+      }
+      #sidebar {
+        width: 320px;
+        padding: 20px;
+        background-color: #ffffff;
+        border-right: 1px solid #ddd;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      #main-content {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+      }
+      h1,
+      h2 {
+        color: #1a73e8;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 10px;
+      }
+      h3 {
+        margin-top: 0;
+        color: #333;
+      }
+      .control-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input[type="range"],
+      select,
+      button,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      textarea {
+        min-height: 80px;
+        font-family: monospace;
+        font-size: 14px;
+      }
+      button {
+        background-color: #1a73e8;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #1558b8;
+      }
+      button:disabled {
+        background-color: #9e9e9e;
+        cursor: not-allowed;
+      }
+      .slider-value {
+        display: inline-block;
+        margin-left: 10px;
+        font-weight: bold;
+        color: #1a73e8;
+      }
+      #results-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .chart-container {
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      #status {
+        margin-top: auto;
+        padding: 15px;
+        background-color: #e3f2fd;
+        border: 1px solid #90caf9;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+        transition: background-color 0.3s, border-color 0.3s;
+      }
+      .status-error {
+        background-color: #ffebee !important;
+        border-color: #ef9a9a !important;
+      }
+      #custom-function-group {
+        display: none;
+      }
+      .info-box {
+        font-size: 0.8em;
+        color: #555;
+        background-color: #f0f0f0;
+        padding: 8px;
+        border-radius: 4px;
+        margin-top: 5px;
+      }
+
+      @media (max-width: 1000px) {
+        body {
+          flex-direction: column;
+        }
+        #sidebar {
+          width: 100%;
+          height: auto;
+          border-right: none;
+          border-bottom: 1px solid #ddd;
+        }
+        #results-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sidebar">
+      <h1>Параметры</h1>
+      <div class="control-group">
+        <label for="L">Длина (L)</label>
+        <input type="range" id="L" min="1" max="10" value="2" step="0.5" />
+        <span class="slider-value" id="L-value">2</span>
+      </div>
+      <div class="control-group">
+        <label for="nx">Точки в пространстве (nx)</label>
+        <input type="range" id="nx" min="51" max="501" value="201" step="10" />
+        <span class="slider-value" id="nx-value">201</span>
+      </div>
+      <div class="control-group">
+        <label for="c">Скорость (c)</label>
+        <input type="range" id="c" min="0.1" max="5" value="1" step="0.1" />
+        <span class="slider-value" id="c-value">1</span>
+      </div>
+      <div class="control-group">
+        <label for="CFL">Число Куранта (CFL)</label>
+        <input
+          type="range"
+          id="CFL"
+          min="0.1"
+          max="2"
+          value="0.9"
+          step="0.05"
+        />
+        <span class="slider-value" id="CFL-value">0.9</span>
+      </div>
+      <div class="control-group">
+        <label for="T">Время симуляции (T)</label>
+        <input type="range" id="T" min="1" max="20" value="12" step="1" />
+        <span class="slider-value" id="T-value">12</span>
+      </div>
+      <div class="control-group">
+        <label for="initialCondition">Начальное условие</label>
+        <select id="initialCondition">
+          <option value="box" selected>Прямоугольный импульс</option>
+          <option value="gaussian">Гауссов импульс</option>
+          <option value="sine">Синусоида</option>
+          <option value="custom">Пользовательская функция</option>
+        </select>
+      </div>
+      <div class="control-group" id="custom-function-group">
+        <label for="customFunctionInput">f(x, L) =</label>
+        <textarea id="customFunctionInput">
+1.5 + 0.5 * Math.sin(4 * Math.PI * x / L)</textarea
+        >
+        <div class="info-box">
+          Используйте синтаксис JS. Доступны переменные `x` и `L`.<br />
+          Пример: `x > L/2 ? 1 : Math.exp(-20 * (x-L/4)*(x-L/4))`
+        </div>
+      </div>
+
+      <button id="runButton">Запустить / Перезапустить</button>
+
+      <div id="status">Готово</div>
+    </div>
+
+    <div id="main-content">
+      <h1>1D Симуляция уравнения переноса</h1>
+      <p>
+        Эта симуляция визуализирует решение 1D уравнения переноса с помощью двух
+        численных методов. Используйте панель слева для изменения параметров.
+      </p>
+      <div id="results-grid">
+        <div class="chart-container">
+          <h3>Явный метод "против потока"</h3>
+          <canvas id="explicitChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Неявный центрированный метод</h3>
+          <canvas id="implicitChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- DOM ссылки ---
+      const L_slider = document.getElementById("L");
+      const nx_slider = document.getElementById("nx");
+      const c_slider = document.getElementById("c");
+      const CFL_slider = document.getElementById("CFL");
+      const T_slider = document.getElementById("T");
+      const initialConditionSelect =
+        document.getElementById("initialCondition");
+      const customFunctionGroup = document.getElementById(
+        "custom-function-group"
+      );
+      const customFunctionInput = document.getElementById(
+        "customFunctionInput"
+      );
+      const runButton = document.getElementById("runButton");
+      const statusDiv = document.getElementById("status");
+      const charts = {};
+      let animationFrameId;
+
+      // --- Обновление значений слайдеров ---
+      const sliders = ["L", "nx", "c", "CFL", "T"];
+      sliders.forEach((id) => {
+        const slider = document.getElementById(id);
+        const display = document.getElementById(`${id}-value`);
+        display.textContent = slider.value;
+        slider.addEventListener("input", (e) => {
+          display.textContent = e.target.value;
+        });
+      });
+
+      // --- Предустановленные начальные функции ---
+      const initialConditions = {
+        box: (x, L) => (x >= L / 4 && x <= L / 2 ? 2.0 : 1.0),
+        gaussian: (x, L) => Math.exp(-Math.pow((x - L / 2) / (L / 10), 2)),
+        sine: (x, L) => 1.5 + 0.5 * Math.sin((2 * Math.PI * x) / L),
+      };
+
+      // --- Логика отображения поля для своей функции ---
+      initialConditionSelect.addEventListener("change", () => {
+        if (initialConditionSelect.value === "custom") {
+          customFunctionGroup.style.display = "block";
+        } else {
+          customFunctionGroup.style.display = "none";
+        }
+      });
+
+      // --- Основная логика симуляции ---
+      function runSimulation() {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+
+        statusDiv.textContent = "Подготовка...";
+        statusDiv.classList.remove("status-error");
+
+        // --- 1. Получение параметров из UI ---
+        const L = parseFloat(L_slider.value);
+        const nx = parseInt(nx_slider.value);
+        const c = parseFloat(c_slider.value);
+        const CFL = parseFloat(CFL_slider.value);
+        const T = parseFloat(T_slider.value);
+
+        let ic_func;
+        if (initialConditionSelect.value === "custom") {
+          try {
+            // ВНИМАНИЕ: new Function() похож на eval(). Безопасно только потому,
+            // что код выполняется локально в вашем браузере.
+            ic_func = new Function(
+              "x",
+              "L",
+              `return ${customFunctionInput.value}`
+            );
+            // Пробный вызов для проверки синтаксиса
+            ic_func(0, L);
+          } catch (e) {
+            statusDiv.textContent = "Ошибка в пользовательской функции!";
+            statusDiv.classList.add("status-error");
+            console.error("Custom function error:", e);
+            return;
+          }
+        } else {
+          ic_func = initialConditions[initialConditionSelect.value];
+        }
+
+        // --- 2. Настройка переменных симуляции ---
+        const dx = L / (nx - 1);
+        const dt = (CFL * dx) / c;
+        const nt = Math.floor(T / dt);
+        const nu = (c * dt) / dx;
+
+        const x_space = Array.from({ length: nx }, (_, i) => i * dx);
+        const u0 = x_space.map((x) => ic_func(x, L));
+
+        let u_exp = [...u0];
+        let u_imp = [...u0];
+
+        // Проверка на некорректные значения (NaN) после вычисления u0
+        if (u0.some(isNaN)) {
+          statusDiv.textContent = "Ошибка: функция вернула NaN!";
+          statusDiv.classList.add("status-error");
+          return;
+        }
+
+        // --- 3. Настройка матрицы для неявного метода (A) ---
+        const A = Array.from({ length: nx }, () => Array(nx).fill(0));
+        const nu_half = nu / 2;
+        for (let i = 0; i < nx; i++) {
+          A[i][i] = 1;
+          if (i < nx - 1) A[i][i + 1] = nu_half;
+          if (i > 0) A[i][i - 1] = -nu_half;
+        }
+        A[0][nx - 1] = -nu_half; // Периодические граничные условия
+        A[nx - 1][0] = nu_half;
+
+        // --- 4. Настройка графиков ---
+        ["explicit", "implicit"].forEach((type) => {
+          if (charts[type]) charts[type].destroy();
+          const ctx = document.getElementById(`${type}Chart`).getContext("2d");
+          charts[type] = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: x_space.map((x) => x.toFixed(2)),
+              datasets: [
+                {
+                  label: `u(x, t)`,
+                  data: [...u0],
+                  borderColor:
+                    type === "explicit"
+                      ? "rgba(26, 115, 232, 1)"
+                      : "rgba(211, 47, 47, 1)",
+                  borderWidth: 2,
+                  pointRadius: 0,
+                  tension: 0.1,
+                },
+              ],
+            },
+            options: {
+              animation: false,
+              scales: { y: { min: -1, max: 2.5 }, x: {} },
+            },
+          });
+        });
+
+        // --- 5. Цикл анимации ---
+        let n = 0; // счетчик шагов по времени
+        function animate() {
+          if (n >= nt) {
+            statusDiv.textContent = "Симуляция завершена!";
+            return;
+          }
+
+          // --- Шаг явного метода ---
+          const un_exp = [...u_exp];
+          for (let i = 0; i < nx; i++) {
+            const i_minus_1 = i === 0 ? nx - 1 : i - 1;
+            u_exp[i] = un_exp[i] - nu * (un_exp[i] - un_exp[i_minus_1]);
+          }
+
+          // --- Шаг неявного метода ---
+          try {
+            u_imp = numeric.solve(A, u_imp);
+          } catch (e) {
+            console.error("Ошибка решения СЛАУ:", e);
+            statusDiv.textContent = "Ошибка: неявный метод не сошелся!";
+            statusDiv.classList.add("status-error");
+            cancelAnimationFrame(animationFrameId);
+            return;
+          }
+
+          if (n % 5 === 0) {
+            // Обновляем график не на каждом шаге для производительности
+            charts.explicit.data.datasets[0].data = u_exp;
+            charts.implicit.data.datasets[0].data = u_imp;
+            charts.explicit.update();
+            charts.implicit.update();
+            statusDiv.textContent = `Симуляция... Время: ${(n * dt).toFixed(
+              2
+            )} / ${T.toFixed(2)}c`;
+          }
+
+          n++;
+          animationFrameId = requestAnimationFrame(animate);
+        }
+
+        animate();
+      }
+
+      runButton.addEventListener("click", runSimulation);
+
+      window.addEventListener("load", () => {
+        // Запустить симуляцию с параметрами по умолчанию при загрузке страницы
+        runButton.click();
+      });
+    </script>
+  </body>
+</html>
