@@ -1,122 +1,173 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import griddata
+import os
 
-# --- 1. Настройка параметров симуляции ---
-# На основе раздела 2.1, 2.2, 2.3 документа
-NUM_PARTICLES = 20000  # Количество частиц, как в полном расчете 
-DT = 0.001             # Шаг интегрирования 
-T_MAX = 0.4            # Максимальное время моделирования 
-PLOT_TIMES = [0.0, 0.1, 0.2, 0.3, 0.4] # Моменты времени для вывода результатов
-GRID_SIZE = 500        # Размер сетки для интерполяции 
+# =============================================================================
+# 1. ОБЩИЕ ПАРАМЕТРЫ И ФУНКЦИИ
+# =============================================================================
+T_MAX = 0.4
+COMPARE_TIMES = [0.1, 0.2, 0.3, 0.4]
 
-# --- 2. Определение поля скоростей ---
-# Формулы из раздела 2.1 
+NX, NY = 150, 150
+NUM_PARTICLES = 30000
+
+
 def u(x, y):
-    """Компонента скорости по оси X."""
     return -np.pi * np.sin(2 * np.pi * x) * np.cos(np.pi * y)
 
 def v(x, y):
-    """Компонента скорости по оси Y."""
     return 2 * np.pi * np.cos(2 * np.pi * x) * np.sin(np.pi * y)
 
-def velocity_field(points):
-    """Возвращает вектор скорости для набора точек."""
-    x = points[:, 0]
-    y = points[:, 1]
-    return np.array([u(x, y), v(x, y)]).T
+def c_0(x, y):
+    return np.sin( (x * y - 0.5) / 0.1)
 
-# --- 3. Реализация метода Рунге-Кутты 4-го порядка ---
-# Метод указан в разделе 2.2 
-def rk4_step(points, dt, turbulence=False):
-    """Один шаг интегрирования методом РК4."""
+# =============================================================================
+# 2. РЕАЛИЗАЦИЯ МЕТОДА ЧАСТИЦ (ЛАГРАНЖЕВ ПОДХОД)
+# =============================================================================
+def run_particle_method(target_times):
+    print("Запуск симуляции: Метод частиц...")
+    from scipy.interpolate import griddata
+
+    points = np.random.rand(NUM_PARTICLES, 2)
+    concentrations = np.arctan((points[:, 1] - 0.5) / 0.1)
     
-    # Добавление турбулентного компонента, если флаг установлен
-    # Модель турбулентности из раздела 2.4 
-    def get_velocity(p):
-        vel = velocity_field(p)
-        if turbulence:
-            # Случайные величины ξ_x, ξ_y ~ U[-0.5, 0.5] 
-            turb_component = np.random.uniform(-0.5, 0.5, size=vel.shape)
-            vel += turb_component
-        return vel
-
-    k1 = get_velocity(points)
-    k2 = get_velocity(points + 0.5 * dt * k1)
-    k3 = get_velocity(points + 0.5 * dt * k2)
-    k4 = get_velocity(points + dt * k3)
+    dt = 0.001
+    time = 0.0
+    results = {}
     
-    new_points = points + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+    def velocity_field(p):
+        return np.array([u(p[:, 0], p[:, 1]), v(p[:, 0], p[:, 1])]).T
+
+    max_time_to_run = max(target_times)
+    times_to_save = sorted(target_times)
     
-    return new_points
-
-# --- 4. Визуализация результатов ---
-def plot_simulation_state(points, concentrations, time, grid_x, grid_y):
-    """Создает и сохраняет изображение с состоянием системы."""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-    fig.suptitle(f'Момент времени: {time:.2f}', fontsize=16)
-
-    # Левый график: распределение частиц
-    ax1.scatter(points[:, 0], points[:, 1], c=concentrations, s=1, cmap='viridis', vmin=-1.5, vmax=1.5)
-    ax1.set_title('Распределение частиц')
-    ax1.set_xlim(0, 1)
-    ax1.set_ylim(0, 1)
-    ax1.set_aspect('equal', adjustable='box')
-
-    # Правый график: интерполированное поле
-    # Метод интерполяции указан в разделе 2.3 
-    interpolated_grid = griddata(points, concentrations, (grid_x, grid_y), method='linear')
-    im = ax2.imshow(interpolated_grid.T, extent=(0, 1, 0, 1), origin='lower', cmap='viridis', vmin=-1.5, vmax=1.5)
-    ax2.set_title('Интерполяция концентрации')
-    ax2.set_xlim(0, 1)
-    ax2.set_ylim(0, 1)
-    ax2.set_aspect('equal', adjustable='box')
-    
-    # Добавление цветовой шкалы
-    fig.colorbar(im, ax=ax2, orientation='vertical')
-    
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.savefig(f"simulation_t_{time:.1f}.png")
-    plt.show()
-
-
-def run_simulation(turbulence=False):
-    """Основная функция для запуска и визуализации симуляции."""
-    # --- Инициализация частиц ---
-    # Область [0,1]x[0,1] 
-    points = np.random.rand(NUM_PARTICLES, 2) 
-    
-    # Начальное распределение концентрации C_0(x,y) = arctan((y-0.5)/0.1) 
-    y_coords = points[:, 1]
-    concentrations = np.arctan((y_coords - 0.5) / 0.1)
-
-    # Сетка для интерполяции
-    grid_x, grid_y = np.mgrid[0:1:complex(0, GRID_SIZE), 0:1:complex(0, GRID_SIZE)]
-
-    # --- Основной цикл симуляции ---
-    current_time = 0.0
-    time_steps = int(T_MAX / DT)
-    
-    print(f"Запуск симуляции {'с турбулентностью' if turbulence else 'без турбулентности'}...")
-
-    # Сохраняем начальное состояние
-    plot_simulation_state(points, concentrations, 0.0, grid_x, grid_y)
-
-    for i in range(1, time_steps + 1):
-        points = rk4_step(points, DT, turbulence=turbulence)
-        current_time = i * DT
+    # ИСПРАВЛЕНИЕ: Добавляем небольшой буфер (dt/2) к условию цикла
+    while time <= max_time_to_run + dt / 2:
+        if times_to_save and time >= times_to_save[0]:
+            current_save_time = times_to_save.pop(0)
+            print(f"  Метод частиц: сохраняем срез на t={current_save_time:.1f}...")
+            grid_x, grid_y = np.mgrid[0:1:complex(0, NX), 0:1:complex(0, NY)]
+            interpolated_grid = griddata(points, concentrations, (grid_x, grid_y), method='linear')
+            results[current_save_time] = interpolated_grid
         
-        # Проверяем, нужно ли визуализировать текущий шаг
-        if any(np.isclose(current_time, p_time) for p_time in PLOT_TIMES[1:]):
-            print(f"Визуализация в момент времени t={current_time:.2f}...")
-            plot_simulation_state(points, concentrations, current_time, grid_x, grid_y)
+        k1 = velocity_field(points)
+        k2 = velocity_field(points + 0.5 * dt * k1)
+        k3 = velocity_field(points + 0.5 * dt * k2)
+        k4 = velocity_field(points + dt * k3)
+        points += (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        time += dt
+
+    if times_to_save:
+
+        save_time = times_to_save.pop(0)
+
+        print(f"  Метод частиц: сохраняем срез на t={save_time:.1f}...")
+        grid_x, grid_y = np.mgrid[0:1:complex(0, NX), 0:1:complex(0, NY)]
+        interpolated_grid = griddata(points, concentrations, (grid_x, grid_y), method='linear')
+        results[save_time] = interpolated_grid
+
+    print("Метод частиц: симуляция завершена.")
+    return results
+
+# =============================================================================
+# 3. РЕАЛИЗАЦИЯ КОНЕЧНО-РАЗНОСТНОГО МЕТОДА (ЭЙЛЕРОВ ПОДХОД)
+# =============================================================================
+def run_finite_difference_method(target_times, initial_C, U_grid, V_grid):
+    print("Запуск симуляции: Конечно-разностный метод...")
+    C = initial_C.copy()
+    dx = 1.0 / (NX - 1)
+    dy = 1.0 / (NY - 1)
+
+    u_max, v_max = np.max(np.abs(U_grid)), np.max(np.abs(V_grid))
+    dt = 0.5 / (u_max / dx + v_max / dy)
     
-    print("Симуляция завершена.")
+    time = 0.0
+    results = {}
+    times_to_save = sorted(target_times)
+    max_time_to_run = max(target_times)
+    
+    while time <= max_time_to_run + dt / 2:
+        if times_to_save and time >= times_to_save[0]:
+            current_save_time = times_to_save.pop(0)
+            print(f"  К-Р метод: сохраняем срез на t={current_save_time:.1f}...")
+            results[current_save_time] = C.copy()
 
+        C_old = C.copy()
+        for i in range(1, NX - 1):
+            for j in range(1, NY - 1):
+                if U_grid[j, i] >= 0:
+                    dCdx = (C_old[j, i] - C_old[j, i - 1]) / dx
+                else:
+                    dCdx = (C_old[j, i + 1] - C_old[j, i]) / dx
+                if V_grid[j, i] >= 0:
+                    dCdy = (C_old[j, i] - C_old[j - 1, i]) / dy
+                else:
+                    dCdy = (C_old[j + 1, i] - C_old[j, i]) / dy
+                C[j, i] = C_old[j, i] - dt * (U_grid[j, i] * dCdx + V_grid[j, i] * dCdy)
+        time += dt
 
+    if times_to_save:
+        save_time = times_to_save.pop(0)
+        print(f"  К-Р метод: сохраняем срез на t={save_time:.1f}...")
+        results[save_time] = C.copy()
+    
+        
+    print("Конечно-разностный метод: симуляция завершена.")
+    return results
+
+# =============================================================================
+# 4. ФУНКЦИЯ ДЛЯ СОХРАНЕНИЯ ОДИНОЧНОГО ГРАФИКА
+# =============================================================================
+def save_single_plot(data, title, filename):
+    """Создает, настраивает и сохраняет один график."""
+    fig, ax = plt.subplots(figsize=(7, 6))
+    
+    vmin, vmax = -1.5, 1.5
+    cmap = 'inferno'
+    
+    im = ax.imshow(data.T, extent=(0, 1, 0, 1), origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.set_title(title, fontsize=16)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    
+    fig.colorbar(im, ax=ax, shrink=0.85)
+    
+    plt.tight_layout()
+    plt.savefig(filename)
+    plt.close(fig) #
+    print(f"Сохранено: {filename}")
+
+# =============================================================================
+# 5. ЗАПУСК И ВИЗУАЛИЗАЦИЯ
+# =============================================================================
 if __name__ == '__main__':
-    # Запуск симуляции без турбулентности (основная модель)
-    run_simulation(turbulence=False)
+    x = np.linspace(0, 1, NX)
+    y = np.linspace(0, 1, NY)
+    X, Y = np.meshgrid(x, y)
+    C_initial = c_0(X , Y)
+    U_grid = u(X, Y)
+    V_grid = v(X, Y)
+
+    # --- Запуск симуляций ---
+    particle_results = run_particle_method(COMPARE_TIMES)
+    fdm_results = run_finite_difference_method(COMPARE_TIMES, C_initial, U_grid, V_grid)
+
+    os.makedirs('lab6/comparison_results', exist_ok=True)
+
+    print("\nСохранение начального состояния...")
+    save_single_plot(C_initial.T, 'Начальное состояние (t=0.0)', 'lab6/comparison_results/initial_state.png')
+
     
-    # Запуск симуляции с турбулентностью (раздел 2.4)
-    # run_simulation(turbulence=True) # Раскомментируйте для запуска
+    print("\nСохранение результатов по временным срезам...")
+    for t in COMPARE_TIMES:
+        p_data = particle_results[t]
+        p_title = f'Метод частиц (t={t:.1f})'
+        p_filename = f'lab6/comparison_results/particle_method_t_{t:.1f}.png'
+        save_single_plot(p_data, p_title, p_filename)
+        
+        fdm_data = fdm_results[t]
+        fdm_title = f'Конечно-разностный метод (t={t:.1f})'
+        fdm_filename = f'lab6/comparison_results/fdm_method_t_{t:.1f}.png'
+        save_single_plot(fdm_data.T, fdm_title, fdm_filename)
+
+    print("\nВсе файлы успешно созданы.")

@@ -13,6 +13,10 @@ T = 4.0       # Полное время симуляции
 nt = int(T / dt) # Количество временных шагов
 nu = c * dt / dx  # Вспомогательное число Куранта
 
+print(dx)
+print(dt)
+
+
 def run_experiment(experiment_name, initial_condition_func):
 
     output_dir = f"lab5/experiment_{experiment_name}"
@@ -64,7 +68,7 @@ def run_experiment(experiment_name, initial_condition_func):
     
 
     plt.figure(figsize=(8, 6))
-    plt.pcolormesh(x_space, t_space, history_explicit_upwind, cmap='viridis', shading='gouraud')
+    plt.pcolormesh(x_space, t_space, history_explicit_upwind, cmap='inferno', shading='gouraud')
 
     plt.xlabel('Пространство (x)')
     plt.ylabel('Время (t)')
@@ -74,7 +78,7 @@ def run_experiment(experiment_name, initial_condition_func):
 
 
     plt.figure(figsize=(8, 6))
-    plt.pcolormesh(x_space, t_space, history_implicit_centered, cmap='plasma', shading='gouraud')
+    plt.pcolormesh(x_space, t_space, history_implicit_centered, cmap='inferno', shading='gouraud')
 
     plt.xlabel('Пространство (x)')
     plt.ylabel('Время (t)')
@@ -93,7 +97,7 @@ def ic_box(x, L):
 
 def ic_gaussian(x, L):
     """Гауссов импульс (колокол)"""
-    return 1.0 + np.exp(-((x - L/2) / (L/10))**2)
+    return np.exp(-((x - L/2) / (L/10))**2)
 
 def ic_sine(x, L):
     """Одна полная волна синусоиды"""
