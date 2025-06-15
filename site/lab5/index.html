@@ -22,189 +22,188 @@
     <script src="./script.js" defer></script>
   </head>
 
-  <body class="bg-slate-100 text-slate-800 font-sans antialiased flex p-4">
+  <body
+    class="bg-slate-100 text-slate-800 font-sans antialiased flex flex-row space-x-4 p-4 h-screen"
+  >
     <div class="w-80 flex flex-col space-y-4">
-      <a
-        class="bg-white p-4 rounded-lg shadow-xl transition-shadow duration-300 ease-in-out"
-        href="../index.html"
+      <a class="bg-white p-4 shadow-xl rounded-lg" href="../index.html"
         >&larr; Назад к выбору работ</a
       >
 
       <div
         id="sidebar"
-        class="bg-white p-6 shadow-xl rounded-lg space-y-6 overflow-y-autoflex-1"
+        class="bg-white shadow-xl rounded-lg flex-grow flex flex-col min-h-0 py-4"
       >
-        <h1 class="text-2xl font-bold text-blue-600 mb-6">Параметры</h1>
+        <h1 class="text-2xl font-bold text-blue-600 px-4">Параметры</h1>
 
-        <div class="control-group">
-          <label for="L" class="block text-sm font-medium text-slate-700 mb-1"
-            >Длина (L)</label
-          >
-          <div class="flex items-center">
-            <input
-              type="range"
-              id="L"
-              min="1"
-              max="10"
-              value="2"
-              step="0.5"
-              class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
-            <span
-              class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
-              id="L-value"
-              >2</span
+        <div class="flex-grow overflow-y-auto space-y-2 my-4 px-4">
+          <div class="control-group">
+            <label for="L" class="block text-sm font-medium text-slate-700 mb-1"
+              >Длина (L)</label
             >
+            <div class="flex items-center">
+              <input
+                type="range"
+                id="L"
+                min="1"
+                max="10"
+                value="2"
+                step="0.5"
+                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <span
+                class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
+                id="L-value"
+                >2</span
+              >
+            </div>
           </div>
-        </div>
 
-        <div class="control-group">
-          <label for="nx" class="block text-sm font-medium text-slate-700 mb-1"
-            >Точки в пространстве (nx)</label
-          >
-          <div class="flex items-center">
-            <input
-              type="range"
-              id="nx"
-              min="51"
-              max="501"
-              value="201"
-              step="10"
-              class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
-            <span
-              class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
-              id="nx-value"
-              >201</span
+          <div class="control-group">
+            <label
+              for="nx"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Точки в пространстве (nx)</label
             >
+            <div class="flex items-center">
+              <input
+                type="range"
+                id="nx"
+                min="51"
+                max="501"
+                value="201"
+                step="10"
+                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <span
+                class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
+                id="nx-value"
+                >201</span
+              >
+            </div>
           </div>
-        </div>
 
-        <div class="control-group">
-          <label for="c" class="block text-sm font-medium text-slate-700 mb-1"
-            >Скорость (c)</label
-          >
-          <div class="flex items-center">
-            <input
-              type="range"
-              id="c"
-              min="0.1"
-              max="5"
-              value="1"
-              step="0.1"
-              class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
-            <span
-              class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
-              id="c-value"
-              >1</span
+          <div class="control-group">
+            <label for="c" class="block text-sm font-medium text-slate-700 mb-1"
+              >Скорость (c)</label
             >
+            <div class="flex items-center">
+              <input
+                type="range"
+                id="c"
+                min="0.1"
+                max="5"
+                value="1"
+                step="0.1"
+                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <span
+                class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
+                id="c-value"
+                >1</span
+              >
+            </div>
           </div>
-        </div>
 
-        <div class="control-group">
-          <label for="CFL" class="block text-sm font-medium text-slate-700 mb-1"
-            >Число Куранта (CFL)</label
-          >
-          <div class="flex items-center">
-            <input
-              type="range"
-              id="CFL"
-              min="0.1"
-              max="2"
-              value="0.9"
-              step="0.05"
-              class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
-            <span
-              class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
-              id="CFL-value"
-              >0.9</span
+          <div class="control-group">
+            <label
+              for="CFL"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Число Куранта (CFL)</label
             >
+            <div class="flex items-center">
+              <input
+                type="range"
+                id="CFL"
+                min="0.1"
+                max="2"
+                value="0.9"
+                step="0.05"
+                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <span
+                class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
+                id="CFL-value"
+                >0.9</span
+              >
+            </div>
           </div>
-        </div>
 
-        <div class="control-group">
-          <label for="T" class="block text-sm font-medium text-slate-700 mb-1"
-            >Время симуляции (T)</label
-          >
-          <div class="flex items-center">
-            <input
-              type="range"
-              id="T"
-              min="1"
-              max="20"
-              value="12"
-              step="1"
-              class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
-            <span
-              class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
-              id="T-value"
-              >12</span
+          <div class="control-group">
+            <label for="T" class="block text-sm font-medium text-slate-700 mb-1"
+              >Время симуляции (T)</label
             >
+            <div class="flex items-center">
+              <input
+                type="range"
+                id="T"
+                min="1"
+                max="20"
+                value="12"
+                step="1"
+                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <span
+                class="slider-value ml-3 text-sm text-slate-600 w-10 text-right"
+                id="T-value"
+                >12</span
+              >
+            </div>
           </div>
-        </div>
 
-        <div class="control-group">
-          <label
-            for="initialCondition"
-            class="block text-sm font-medium text-slate-700 mb-1"
-            >Начальное условие</label
-          >
-          <select
-            id="initialCondition"
-            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm"
-          >
-            <option value="box" selected>Прямоугольный импульс</option>
-            <option value="gaussian">Гауссов импульс</option>
-            <option value="sine">Синусоида</option>
-            <option value="custom">Пользовательская функция</option>
-          </select>
-        </div>
+          <div class="control-group">
+            <label
+              for="initialCondition"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Начальное условие</label
+            >
+            <select
+              id="initialCondition"
+              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm"
+            >
+              <option value="box" selected>Прямоугольный импульс</option>
+              <option value="gaussian">Гауссов импульс</option>
+              <option value="sine">Синусоида</option>
+              <option value="custom">Пользовательская функция</option>
+            </select>
+          </div>
 
-        <div class="control-group" id="custom-function-group">
-          <label
-            for="customFunctionInput"
-            class="block text-sm font-medium text-slate-700 mb-1"
-            >f(x, L) =</label
-          >
-          <textarea
-            id="customFunctionInput"
-            rows="3"
-            class="mt-1 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 p-2"
-          >
+          <div class="control-group" id="custom-function-group">
+            <label
+              for="customFunctionInput"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >f(x, L) =</label
+            >
+            <textarea
+              id="customFunctionInput"
+              rows="3"
+              class="mt-1 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 p-2"
+            >
 1.5 + 0.5 * Math.sin(4 * Math.PI * x / L)</textarea
-          >
-          <div
-            class="info-box mt-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-md border border-slate-200"
-          >
-            Используйте синтаксис JS. Доступны переменные <code>x</code> и
-            <code>L</code>.<br />
-            Пример: <code>x > L/2 ? 1 : Math.exp(-20 * (x-L/4)*(x-L/4))</code>
+            >
+            <div
+              class="info-box mt-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-md border border-slate-200"
+            >
+              Используйте синтаксис JS. Доступны переменные <code>x</code> и
+              <code>L</code>.<br />
+              Пример: <code>x > L/2 ? 1 : Math.exp(-20 * (x-L/4)*(x-L/4))</code>
+            </div>
           </div>
         </div>
 
         <button
           id="runButton"
-          class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-md transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold mx-4 py-2 px-4 rounded-md transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
         >
           Запустить / Перезапустить
         </button>
-
-        <div
-          id="status"
-          class="mt-4 text-sm text-slate-600 p-3 bg-slate-50 rounded-md border border-slate-200 text-center"
-        >
-          Готово
-        </div>
       </div>
     </div>
 
     <!-- Основной контент с графиками -->
     <div
       id="main-content"
-      class="flex-1 p-8 overflow-y-auto bg-white rounded-lg shadow-lg ml-4"
+      class="flex-1 p-8 overflow-y-auto bg-white rounded-lg shadow-lg"
     >
       <header class="mb-8">
         <h1 class="text-3xl font-bold text-blue-600">
