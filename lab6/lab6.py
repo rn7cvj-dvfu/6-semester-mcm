@@ -24,12 +24,12 @@ def c_0(x, y):
 # =============================================================================
 # 2. РЕАЛИЗАЦИЯ МЕТОДА ЧАСТИЦ (ЛАГРАНЖЕВ ПОДХОД)
 # =============================================================================
-def run_particle_method(target_times):
+def run_particle_method(target_times , c_0 = c_0):
     print("Запуск симуляции: Метод частиц...")
     from scipy.interpolate import griddata
 
     points = np.random.rand(NUM_PARTICLES, 2)
-    concentrations = np.arctan((points[:, 1] - 0.5) / 0.1)
+    concentrations = c_0(points[:, 0], points[:, 1])
     
     dt = 0.001
     time = 0.0
