@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--target",
+        "lib/main.dart",
+        "d",
+        "chrome",
+        "--web-browser-flag",
+        "--disable-web-security",
+        "--web-port",
+        "8080",
+        "--dart-define=MODE=${input:environment}",
+        "--dart-define=BUILD_VERSION=BUILD_VERSION",
+        "--dart-define=BUILD_NUMBER=BUILD_NUMBER",
+        "--dart-define=BUILD_DATE=BUILD_DATE",
+        "--dart-define=COMMIT_HASH=COMMIT_HASH"
+      ]
+    },
+
+  ],
+  "inputs": [
+    {
+      "id": "environment",
+      "type": "pickString",
+      "description": "Select the environment to run",
+      "options": ["dev", "prod"],
+      "default": "dev"
+    },
+  ]
+}
