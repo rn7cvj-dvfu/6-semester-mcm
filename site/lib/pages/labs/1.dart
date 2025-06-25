@@ -202,8 +202,8 @@ class _Lab1State extends State<Lab1> {
                         Expanded(
                           child: ExcelButton(
                             fetchData: _fetchData,
-                            col1_name: 'Время (сек)',
-                            col2_name: 'Температура (°C)',
+                            col1Name: 'Время (сек)',
+                            col2Name: 'Температура (°C)',
                             fileName: 'lab1',
                           ),
                         ),

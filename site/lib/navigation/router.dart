@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../pages/labs.dart';
 import '../pages/labs/1.dart';
+import '../pages/labs/2.dart';
 import 'names.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -21,6 +22,11 @@ GoRouter router = GoRouter(
           name: RouteNames.first,
           path: RouteNames.first,
           builder: (context, state) => const Lab1(),
+        ),
+        GoRoute(
+          name: RouteNames.second,
+          path: RouteNames.second,
+          builder: (context, state) => const Lab2(),
         )
       ],
     ),

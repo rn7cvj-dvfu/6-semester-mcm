@@ -33,7 +33,9 @@ class _ValueInputState extends State<_ValueInput> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(widget.parameter.title),
+              Expanded(
+                child: Text(widget.parameter.title),
+              ),
               if (widget.parameter.unit != null)
                 Math.tex(
                   widget.parameter.unit!,

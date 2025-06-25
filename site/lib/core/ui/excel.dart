@@ -103,15 +103,15 @@ Future<void> createAndDownloadExcel(
 
 class ExcelButton extends StatefulWidget {
   final String fileName;
-  final String col1_name;
-  final String col2_name;
+  final String col1Name;
+  final String col2Name;
   final Future<List<(double, double)>> fetchData;
 
   const ExcelButton({
     super.key,
     required this.fetchData,
-    required this.col1_name,
-    required this.col2_name,
+    required this.col1Name,
+    required this.col2Name,
     required this.fileName,
   });
 
@@ -141,10 +141,10 @@ class _ExcelButtonState extends State<ExcelButton> {
 
                   // Затем создаем Excel файл
                   await createAndDownloadExcel(
-                    [widget.col1_name, widget.col2_name],
+                    [widget.col1Name, widget.col2Name],
                     {
-                      widget.col1_name: data.map((e) => e.$1).toList(),
-                      widget.col2_name: data.map((e) => e.$2).toList(),
+                      widget.col1Name: data.map((e) => e.$1).toList(),
+                      widget.col2Name: data.map((e) => e.$2).toList(),
                     },
                     fileName: widget.fileName,
                   );

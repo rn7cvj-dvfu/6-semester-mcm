@@ -46,18 +46,14 @@ class _SingleChartState extends State<SingleChart> {
     if (data.length <= 2) return data;
 
     final simplified = <(double, double)>[data.first];
-    int deleted = 0;
 
     for (int i = 1; i < data.length - 1; i++) {
       final angle = _calculateAngle(simplified.last, data[i], data[i + 1]);
 
       if (angle.abs() > threshold) {
         simplified.add(data[i]);
-      } else {
-        deleted++;
       }
     }
-    print('Deleted: $deleted');
 
     simplified.add(data.last);
     return simplified;
@@ -68,18 +64,9 @@ class _SingleChartState extends State<SingleChart> {
 
     var visibleData = _allData!;
 
-    // Упрощение по углу
     if (widget.angleThreshold != null && widget.angleThreshold! > 0) {
       visibleData = _simplifyByAngle(visibleData, widget.angleThreshold!);
     }
-
-    // Ограничение количества точек
-    // if (visibleData.length > 1000) {
-    //   final step = visibleData.length / 1000;
-    //   visibleData = [
-    //     for (int i = 0; i < visibleData.length; i += step.ceil()) visibleData[i]
-    //   ];
-    // }
 
     return visibleData.map((e) => FlSpot(e.$1, e.$2)).toList();
   }
@@ -110,7 +97,7 @@ class _SingleChartState extends State<SingleChart> {
             return LineChart(
               LineChartData(
                 maxY: maxValue * 1.1,
-                minY: minValue * 0.9,
+                minY: minValue * 1.1,
                 lineTouchData: LineTouchData(enabled: true),
                 borderData: FlBorderData(show: true),
                 titlesData: FlTitlesData(
