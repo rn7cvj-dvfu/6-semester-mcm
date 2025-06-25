@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/settings.dart';
 import '../../core/ui/back_button.dart';
 import '../../core/ui/chart/single.dart';
+import '../../core/ui/excel.dart';
 import '../../core/ui/parameters/model.dart';
 import '../../core/ui/parameters/selector.dart';
 import '../../navigation/navigator.dart';
@@ -124,9 +124,8 @@ class _Lab1State extends State<Lab1> {
     final T_env_C = params['T_env_C']! as double;
     final time = params['time']! as double;
     const dt = 0.1;
-    const eta = 0.9; // КПД
+    const eta = 0.9;
 
-    // Перевод в Кельвины
     final T_min = T_min_C + T_k_0;
     final T_max = T_max_C + T_k_0;
     final T0 = T0_C + T_k_0;
@@ -162,7 +161,7 @@ class _Lab1State extends State<Lab1> {
       T[i] = current_T + dT;
     }
 
-    return T.map((temp) => temp - T_k_0).toList(); // Возвращаем в °C
+    return T.map((temp) => temp - T_k_0).toList();
   }
 
   Future<List<(double, double)>> _foldData(
@@ -194,15 +193,27 @@ class _Lab1State extends State<Lab1> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    AppBackButton(
-                      onTap: AppNavigator.openLabs,
+                    Row(
+                      children: [
+                        AppBackButton(
+                          onTap: AppNavigator.openLabs,
+                        ),
+                        SizedBox(width: AppUISettings.defaultPadding),
+                        Expanded(
+                          child: ExcelButton(
+                            fetchData: _fetchData,
+                            col1_name: 'Время (сек)',
+                            col2_name: 'Температура (°C)',
+                            fileName: 'lab1',
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppUISettings.defaultPadding),
                     Expanded(
                       child: ParametersSelector(
                         parameters: _initialParameters,
                         onApply: (params) {
-                          // _fetchData = _simulate(params);
                           _fetchData = _simulate(params).then(
                             (data) => _foldData(data, 0.1),
                           );
@@ -232,6 +243,7 @@ class _Lab1State extends State<Lab1> {
                             xAxisLabel: 'Время (сек)',
                             yAxisLabel: 'Температура (°C)',
                             fetchData: _fetchData,
+                            angleThreshold: 0.009,
                           ),
                         )
                       ],
