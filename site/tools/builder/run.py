@@ -85,7 +85,6 @@ def get_git_commit_hash() -> str:
 
 
 def build_web(
-    MODE: str,
     BUILD_VERSION: str,
     BUILD_NUMBER: str,
     BUILD_DATE: str,
@@ -100,23 +99,14 @@ def build_web(
         "build",
         "web",
         "--base-href",
-        "/web/",
+        "/6-semester/mcm/",
         "--target",
         "lib/main.dart",
-        "--build-name={}".format(BUILD_VERSION),
-        "--build-number={}".format(BUILD_NUMBER),
-        "--dart-define=MODE={}".format(MODE),
-        "--dart-define=BUILD_VERSION={}".format(BUILD_VERSION),
-        "--dart-define=BUILD_NUMBER={}".format(BUILD_NUMBER),
-        "--dart-define=BUILD_DATE={}".format(BUILD_DATE),
-        "--dart-define=BUILD_HASH={}".format(SHORT_HASH),
     ]
     subprocess.run(command, check=True)
 
 
 def zip_web(
-    MODE: str,
-    USE_MOCK: str,
     BUILD_VERSION: str,
     BUILD_NUMBER: str,
     BUILD_DATE: str,
@@ -130,7 +120,7 @@ def zip_web(
     if not os.path.exists(f"build/bundle_{SHORT_HASH}"):
         os.mkdir(f"build/bundle_{SHORT_HASH}")
 
-    zip_filename = f"build/bundle_{SHORT_HASH}/PNExpert WEB-{MODE.upper()} USE_MOCK-{USE_MOCK.upper()} {BUILD_VERSION}+{BUILD_NUMBER} {BUILD_DATE} {SHORT_HASH}.zip"
+    zip_filename = f"build/bundle_{SHORT_HASH}/MCM {BUILD_VERSION}+{BUILD_NUMBER} {BUILD_DATE} {SHORT_HASH}.zip"
 
     print(f"Creating zip archive: {zip_filename}")
 
@@ -168,28 +158,20 @@ NEW_VERSION = get_next_version(LAST_VERSION, VERSION_CHANGE)
 NEW_BUILD_NUMBER = get_next_build_number(LAST_BUILD_NUMBER, VERSION_CHANGE)
 
 
-MODES = ["dev", "prod"]
-USE_MOCKS = ["true"]
 
+build_web(
+    BUILD_VERSION=NEW_VERSION,
+    BUILD_NUMBER=NEW_BUILD_NUMBER,
+    BUILD_DATE=NOW.strftime("%Y-%m-%dT%H:%M:%S"),
+    COMMIT_HASH=COMMIT_HASH,
+)
 
-for MODE in MODES:
-
-
-    build_web(
-        MODE=MODE,
-        BUILD_VERSION=NEW_VERSION,
-        BUILD_NUMBER=NEW_BUILD_NUMBER,
-        BUILD_DATE=NOW.strftime("%Y-%m-%dT%H:%M:%S"),
-        COMMIT_HASH=COMMIT_HASH,
-    )
-
-    zip_web(
-        MODE=MODE,
-        BUILD_VERSION=NEW_VERSION,
-        BUILD_NUMBER=NEW_BUILD_NUMBER,
-        BUILD_DATE=NOW.strftime("%Y-%m-%dT%H:%M:%S"),
-        COMMIT_HASH=COMMIT_HASH,
-    )
+zip_web(
+    BUILD_VERSION=NEW_VERSION,
+    BUILD_NUMBER=NEW_BUILD_NUMBER,
+    BUILD_DATE=NOW.strftime("%Y-%m-%dT%H:%M:%S"),
+    COMMIT_HASH=COMMIT_HASH,
+)
 
 NEW_BUILD = {
     "build_version": NEW_VERSION,

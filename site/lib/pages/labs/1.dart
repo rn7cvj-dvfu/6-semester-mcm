@@ -106,7 +106,19 @@ class _Lab1State extends State<Lab1> {
     ),
   ];
 
-  Future<List<(double, double)>> _fetchData = Future.value([]);
+  Future<List<(double, double)>> _initialFetchData() async {
+    final params = _initialParameters.fold<Map<String, dynamic>>(
+      {},
+      (acc, parameter) {
+        return acc..[parameter.key] = parameter.initialValue;
+      },
+    );
+    return _simulate(params).then(
+      (data) => _foldData(data, 0.1),
+    );
+  }
+
+  late Future<List<(double, double)>> _fetchData = _initialFetchData();
 
   Future<List<double>> _simulate(Map<String, dynamic> params) async {
     const sigma = 5.67e-8; // Постоянная Стефана-Больцмана

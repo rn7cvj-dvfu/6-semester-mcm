@@ -43,7 +43,7 @@ class SingleChart extends StatelessWidget {
               LineChartData(
                 maxY: maxValue * 1.1,
                 minY: minValue * 1.1,
-                lineTouchData: LineTouchData(enabled: true),
+                lineTouchData: LineTouchData(enabled: false),
                 borderData: FlBorderData(show: true),
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
