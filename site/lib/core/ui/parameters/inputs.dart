@@ -1,30 +1,23 @@
 part of 'selector.dart';
 
-class _ValueInput extends StatefulWidget {
+class _ValueInput extends StatelessWidget {
   final ParameterModelValue parameter;
   final ValueChanged<double> onChanged;
-  final ValueKey key;
-  final double initialValue;
+  final double currentValue;
 
   const _ValueInput({
-    required this.key,
-    required this.initialValue,
+    super.key,
+    required this.currentValue,
     required this.parameter,
     required this.onChanged,
   });
 
   @override
-  State<_ValueInput> createState() => _ValueInputState();
-}
-
-class _ValueInputState extends State<_ValueInput> {
-  late final _controller = TextEditingController(
-    text: widget.parameter.initialValue.toStringAsFixed(2),
-  );
-  late double _value = widget.parameter.initialValue;
-
-  @override
   Widget build(BuildContext context) {
+    final controller = TextEditingController(
+      text: currentValue.toStringAsFixed(2),
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
@@ -34,11 +27,11 @@ class _ValueInputState extends State<_ValueInput> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(widget.parameter.title),
+                child: Text(parameter.title),
               ),
-              if (widget.parameter.unit != null)
+              if (parameter.unit != null)
                 Math.tex(
-                  widget.parameter.unit!,
+                  parameter.unit!,
                   settings: const TexParserSettings(
                     strict: Strict.ignore, // Отключить строгий режим
                   ),
@@ -46,18 +39,11 @@ class _ValueInputState extends State<_ValueInput> {
             ],
           ),
           Slider(
-            value: _value,
-            min: widget.parameter.minValue,
-            max: widget.parameter.maxValue,
-            divisions: widget.parameter.stepCount,
-            onChanged: (newValue) {
-              widget.onChanged(newValue);
-
-              _value = newValue;
-              _controller.text = newValue.toStringAsFixed(2);
-
-              setState(() {});
-            },
+            value: currentValue,
+            min: parameter.minValue,
+            max: parameter.maxValue,
+            divisions: parameter.stepCount,
+            onChanged: onChanged,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -66,8 +52,8 @@ class _ValueInputState extends State<_ValueInput> {
                 width: AppUISettings.selectorWidth -
                     AppUISettings.defaultPadding * 2,
                 child: TextFormField(
-                  key: widget.key,
-                  controller: _controller,
+                  
+                  controller: controller,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
@@ -83,24 +69,15 @@ class _ValueInputState extends State<_ValueInput> {
                       return;
                     }
 
-                    widget.onChanged(newValue);
-
-                    final newSliderValue = newValue.clamp(
-                      widget.parameter.minValue,
-                      widget.parameter.maxValue,
+                    final clampedValue = newValue.clamp(
+                      parameter.minValue,
+                      parameter.maxValue,
                     );
-                    _value = newSliderValue;
 
-                    // _controller.text = newValue.toStringAsFixed(2);
-
-                    setState(() {});
+                    onChanged(clampedValue);
                   },
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    // contentPadding: EdgeInsets.symmetric(
-                    //   horizontal: 8,
-                    //   vertical: 8,
-                    // ),
                   ),
                 ),
               ),
@@ -112,38 +89,25 @@ class _ValueInputState extends State<_ValueInput> {
   }
 }
 
-class _ToggleInput extends StatefulWidget {
+class _ToggleInput extends StatelessWidget {
   final ParameterModelToggle parameter;
   final ValueChanged<bool> onChanged;
-  final ValueKey key;
-  final bool initialValue;
+
+  final bool currentValue;
 
   const _ToggleInput({
-    required this.key,
-    required this.initialValue,
+    super.key,
+    required this.currentValue,
     required this.parameter,
     required this.onChanged,
   });
 
   @override
-  State<_ToggleInput> createState() => _ToggleInputState();
-}
-
-class _ToggleInputState extends State<_ToggleInput> {
-  late bool _value = widget.parameter.initialValue;
-
-  @override
   Widget build(BuildContext context) {
     return SwitchListTile(
-      key: widget.key,
-      title: Text(widget.parameter.title),
-      value: _value,
-      onChanged: (newValue) {
-        widget.onChanged(newValue);
-
-        _value = newValue;
-        setState(() {});
-      },
+      title: Text(parameter.title),
+      value: currentValue,
+      onChanged: onChanged,
     );
   }
 }

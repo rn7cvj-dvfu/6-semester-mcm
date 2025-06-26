@@ -1,0 +1,1 @@
+rename setBundleId --targets,ios android --value "$1" 

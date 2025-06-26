@@ -22,14 +22,6 @@ class ParametersSelector extends StatefulWidget {
 }
 
 class _ParametersSelectorState extends State<ParametersSelector> {
-  // late Map<String, dynamic> _data =
-  //     widget.parameters.fold<Map<String, dynamic>>(
-  //   {},
-  //   (acc, parameter) {
-  //     return acc..[parameter.key] = parameter.initialValue;
-  //   },
-  // );
-
   late Map<String, dynamic> _data;
 
   @override
@@ -66,47 +58,39 @@ class _ParametersSelectorState extends State<ParametersSelector> {
             height: AppUISettings.defaultPadding,
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppUISettings.defaultPadding,
               ),
-              child: Column(
-                children: [
-                  for (int index = 0;
-                      index < widget.parameters.length;
-                      index++) ...[
-                    if (index > 0)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppUISettings.defaultPadding / 2,
-                        ),
-                        child: const Divider(),
-                      ),
-                    widget.parameters[index].map(
-                      value: (parameter) => _ValueInput(
-                        key: ValueKey(parameter.key),
-                        parameter: parameter,
-                        initialValue: _data[parameter.key],
-                        onChanged: (value) {
-                          setState(() {
-                            _data[parameter.key] = value;
-                          });
-                        },
-                      ),
-                      toggle: (parameter) => _ToggleInput(
-                        key: ValueKey(parameter.key),
-                        parameter: parameter,
-                        initialValue: _data[parameter.key],
-                        onChanged: (value) {
-                          setState(() {
-                            _data[parameter.key] = value;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ],
+              itemCount: widget.parameters.length,
+              separatorBuilder: (context, index) => const Divider(
+                height: AppUISettings.defaultPadding,
               ),
+              itemBuilder: (context, index) {
+                final parameter = widget.parameters[index];
+                return parameter.map(
+                  value: (parameter) => _ValueInput(
+                    key: ValueKey(parameter.key),
+                    parameter: parameter,
+                    currentValue: _data[parameter.key],
+                    onChanged: (value) {
+                      setState(() {
+                        _data[parameter.key] = value;
+                      });
+                    },
+                  ),
+                  toggle: (parameter) => _ToggleInput(
+                    key: ValueKey(parameter.key),
+                    parameter: parameter,
+                    currentValue: _data[parameter.key],
+                    onChanged: (value) {
+                      setState(() {
+                        _data[parameter.key] = value;
+                      });
+                    },
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(

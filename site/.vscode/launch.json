@@ -15,11 +15,6 @@
         "--disable-web-security",
         "--web-port",
         "8080",
-        "--dart-define=MODE=${input:environment}",
-        "--dart-define=BUILD_VERSION=BUILD_VERSION",
-        "--dart-define=BUILD_NUMBER=BUILD_NUMBER",
-        "--dart-define=BUILD_DATE=BUILD_DATE",
-        "--dart-define=COMMIT_HASH=COMMIT_HASH"
       ]
     },
 
