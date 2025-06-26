@@ -66,6 +66,10 @@ def run_experiment(experiment_name, initial_condition_func):
     save_frame_interval = max(1, nt // 200)  # Aim for ~200 frames for GIF
     animation_frame_counter = 0
  
+    slice_times = []
+    slice_explicit = []
+    slice_implicit = []
+    
     for n in range(1, nt):
         current_time_s = n * dt
         # 1) Явный метод Эйлера с разностями против потока
@@ -104,6 +108,11 @@ def run_experiment(experiment_name, initial_condition_func):
             animation_frame_counter += 1
 
         if current_time_s >= next_save_time_target_s - dt / 2: # dt/2 for tolerance
+            # Сохраняем значения для общего графика
+            slice_times.append(current_time_s)
+            slice_explicit.append(u_exp.copy())
+            slice_implicit.append(u_imp.copy())
+            
             # Сохранение среза для явного метода
             plt.figure(figsize=(8, 5))
             plt.plot(x_space, u_exp, 'b-', label=f'Explicit Upwind, t={current_time_s:.2f}s')
@@ -137,29 +146,62 @@ def run_experiment(experiment_name, initial_condition_func):
     print(f"--- Симуляция для эксперимента '{experiment_name}' завершена. Создание GIF-анимаций... ---")
 
     # Create GIF for Explicit Method
-    images_explicit = []
-    frame_files_explicit = sorted([os.path.join(frames_dir_explicit, f) for f in os.listdir(frames_dir_explicit) if f.endswith('.png') and f.startswith('frame_')])
-    for filename in frame_files_explicit:
-        images_explicit.append(imageio.imread(filename))
-    if images_explicit:
-        imageio.mimsave(os.path.join(output_dir, 'animation_explicit.gif'), images_explicit, fps=10)
-        print(f"  Сохранена анимация: animation_explicit.gif для {experiment_name}")
-        # Optional: Clean up individual frames
-        # for f in frame_files_explicit: os.remove(f)
-        # os.rmdir(frames_dir_explicit)
+    # images_explicit = []
+    # frame_files_explicit = sorted([os.path.join(frames_dir_explicit, f) for f in os.listdir(frames_dir_explicit) if f.endswith('.png') and f.startswith('frame_')])
+    # for filename in frame_files_explicit:
+    #     images_explicit.append(imageio.imread(filename))
+    # if images_explicit:
+    #     imageio.mimsave(os.path.join(output_dir, 'animation_explicit.gif'), images_explicit, fps=10)
+    #     print(f"  Сохранена анимация: animation_explicit.gif для {experiment_name}")
+    #     # Optional: Clean up individual frames
+    #     # for f in frame_files_explicit: os.remove(f)
+    #     # os.rmdir(frames_dir_explicit)
 
 
-    # Create GIF for Implicit Method
-    images_implicit = []
-    frame_files_implicit = sorted([os.path.join(frames_dir_implicit, f) for f in os.listdir(frames_dir_implicit) if f.endswith('.png') and f.startswith('frame_')])
-    for filename in frame_files_implicit:
-        images_implicit.append(imageio.imread(filename))
-    if images_implicit:
-        imageio.mimsave(os.path.join(output_dir, 'animation_implicit.gif'), images_implicit, fps=10)
-        print(f"  Сохранена анимация: animation_implicit.gif для {experiment_name}")
-        # Optional: Clean up individual frames
-        # for f in frame_files_implicit: os.remove(f)
-        # os.rmdir(frames_dir_implicit)
+    # # Create GIF for Implicit Method
+    # images_implicit = []
+    # frame_files_implicit = sorted([os.path.join(frames_dir_implicit, f) for f in os.listdir(frames_dir_implicit) if f.endswith('.png') and f.startswith('frame_')])
+    # for filename in frame_files_implicit:
+    #     images_implicit.append(imageio.imread(filename))
+    # if images_implicit:
+    #     imageio.mimsave(os.path.join(output_dir, 'animation_implicit.gif'), images_implicit, fps=10)
+    #     print(f"  Сохранена анимация: animation_implicit.gif для {experiment_name}")
+    #     # Optional: Clean up individual frames
+    #     # for f in frame_files_implicit: os.remove(f)
+    #     # os.rmdir(frames_dir_implicit)
+
+    # print(f"--- Эксперимент '{experiment_name}' полностью завершен (включая GIF). ---\\n")
+
+
+    # Итоговый график для всех срезов (Explicit)
+    if slice_explicit:
+        plt.figure(figsize=(10, 6))
+        for i, u in enumerate(slice_explicit):
+            plt.plot(x_space, u, label=f't={slice_times[i]:.2f}s')
+        plt.xlabel('Пространство (x)')
+        plt.ylabel('Величина (u)')
+        plt.title(f'Explicit Upwind: все срезы — {experiment_name}')
+        plt.grid(True)
+        plt.ylim(-1, 2.5)
+        plt.legend(title="Время среза", fontsize=8)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'all_slices_explicit.png'))
+        plt.close()
+        
+    # Итоговый график для всех срезов (Implicit)
+    if slice_implicit:
+        plt.figure(figsize=(10, 6))
+        for i, u in enumerate(slice_implicit):
+            plt.plot(x_space, u, label=f't={slice_times[i]:.2f}s')
+        plt.xlabel('Пространство (x)')
+        plt.ylabel('Величина (u)')
+        plt.title(f'Implicit Centered: все срезы — {experiment_name}')
+        plt.grid(True)
+        plt.ylim(-1, 2.5)
+        plt.legend(title="Время среза", fontsize=8)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'all_slices_implicit.png'))
+        plt.close()
 
     print(f"--- Эксперимент '{experiment_name}' полностью завершен (включая GIF). ---\\n")
 
